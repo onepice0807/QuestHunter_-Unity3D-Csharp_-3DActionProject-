@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using static UnityEditor.Timeline.TimelinePlaybackControls;
@@ -10,11 +11,16 @@ public class GameManager : MonoBehaviour
     private int _coinCount = 0; // 코인 개수를 저장하는 변수
     public Text _monsterText; // 몬스터 수를 표시할 Text
     private int _monsterCount = 0; // 몬스터 처리수를 저장하는 변수
+    [SerializeField] private WarrningPopUp _WarrningPopUp; // 게임종료를 위한 팝업
+    [SerializeField] private Sprite[] _BgmOnOffSprite; // Bgm을 사용하기 위한 변수
+    [SerializeField] GameObject _OptionPopUp; // 옵션(BGM)을 위한 팝업
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        _OptionPopUp.gameObject.SetActive(false);
+        SoundManager.Instance.Play_BackgroundMusic();
     }
 
     void Awake()
@@ -56,6 +62,64 @@ public class GameManager : MonoBehaviour
             _monsterText.text = "몬스터 처리수 : " + _monsterCount.ToString();
         }
     }
+
+    public void BgmOnOff(GameObject btn)
+    {
+        if (SoundManager.Instance.MusicOnOff)
+        {
+            SoundManager.Instance.MusicOnOff = false;
+            btn.GetComponent<Image>().sprite = _BgmOnOffSprite[0];
+        }
+        else
+        {
+            SoundManager.Instance.MusicOnOff = true;
+            btn.GetComponent<Image>().sprite = _BgmOnOffSprite[1];
+        }
+    }
+
+    public void ShowOptionPopUp()
+    {
+        _OptionPopUp.gameObject.SetActive(true);
+    }
+    public void CloseOptionPopUp()
+    {
+        _OptionPopUp.gameObject.SetActive(false);
+    }
+
+    public void GameExitPopUp()
+    {
+        if (_WarrningPopUp != null)
+        {
+            _WarrningPopUp.gameObject.SetActive(true);
+            _WarrningPopUp.SetDescription("정말로 게임을 나가시겠습니까?");
+            _WarrningPopUp.SetOkButtonCallback(ExitGame); // OK 버튼에 ExitGame 메서드 연결
+            _WarrningPopUp.SetCancelButtonCallback(CloseGameExitPopUp); // 취소 버튼에 팝업 닫기 연결
+        }
+    }
+
+    public void CloseGameExitPopUp()
+    {
+        _WarrningPopUp.gameObject.SetActive(false);
+    }
+
+    public void ShowExitPopUp()
+    {
+        _WarrningPopUp.gameObject.SetActive(true);
+        _WarrningPopUp.SetDescription("정말로 나가시겠습니까?");
+        _WarrningPopUp._oKCallFunc = ExitGame;
+        //_WarningPopUp._cancelFunc
+    }
+
+    public void ExitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+    Application.Quit();
+#endif
+
+    }
+
 
 
     // Update is called once per frame

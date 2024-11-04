@@ -4,7 +4,7 @@ using UnityEngine.UI; // UI Text를 사용하기 위한 네임스페이스 추가
 
 public class SideScrollingSceneTrigger : MonoBehaviour
 {
-    [SerializeField] private string _sceneToLoad = "SideScrollingScene"; // 로드할 씬의 이름
+    [SerializeField] private string _sceneToLoad = "SideScene"; // 로드할 씬의 이름
     [SerializeField] private float _delayBeforeLoad = 5.0f; // 씬 전환 전 대기 시간
     [SerializeField] private GameObject _popUp; // 플레이어의 해당맵 이동여부 판단하는 팝업창
     [SerializeField] private Text _popUpText; // 대기 시간 카운트다운 UI 텍스트
@@ -26,6 +26,7 @@ public class SideScrollingSceneTrigger : MonoBehaviour
             _playerInside = true;
             _popUp.SetActive(true);
             _popUpText.text = "횡스크롤 던전에 입장하시겠습니까?";
+            _popUp.GetComponent<PopUp>()._callFunc = OnClickNextStage;
         }
     }
     public void OnClickNextStage()

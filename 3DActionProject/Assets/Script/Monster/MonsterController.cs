@@ -18,12 +18,20 @@ public class MonsterController : MonoBehaviour
     public delegate void MonsterDeathHandler(GameObject monster);
     public event MonsterDeathHandler OnMonsterDeath; // 몬스터 사망 이벤트
 
+    public bool _isSideScrolling = false;  // 카메라가 횡스크롤 모드인지 여부를 나타내는 변수
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _animator = GetComponent<Animator>();
         _navAgent = GetComponent<NavMeshAgent>();
+
+        // 횡스크롤 모드일 때 y축 및 x축 회전을 잠그기
+        if (_isSideScrolling)
+        {
+            _navAgent.updateRotation = false; // NavMeshAgent의 회전 비활성화
+        }
     }
 
     public void setTarget(Transform target)
@@ -47,6 +55,13 @@ public class MonsterController : MonoBehaviour
             else if (distanceToTarget <= _chaseRange && distanceToTarget > _attackRange)
             {
                 _navAgent.isStopped = false;
+                Vector3 targetPosition = _target.position;
+
+                // 횡스크롤 모드에서는 x축 이동을 제한하여 z축만 이동
+                if (_isSideScrolling)
+                {
+                    targetPosition.x = transform.position.x;
+                }
                 _navAgent.SetDestination(_target.position); // 플레이어를 추적
                 _animator.SetBool("Move", true); // 이동 애니메이션 설정
             }

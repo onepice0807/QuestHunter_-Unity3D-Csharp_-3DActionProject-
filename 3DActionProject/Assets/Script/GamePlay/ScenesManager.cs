@@ -80,6 +80,11 @@ public class ScenesManager : MonoBehaviour
         StartCoroutine(GameOverSequence()); // 게임 오버 UI를 표시한 후 씬을 전환하는 코루틴 시작
     }
 
+    public void OnStartButtionClick()
+    {
+        SceneManager.LoadScene(_sceneToLoad); // 시작버튼을 눌렀을때 지정된 씬으로 전환
+    }
+
     // 게임 오버 UI 표시 후 씬을 전환하는 코루틴
     private IEnumerator GameOverSequence()
     {

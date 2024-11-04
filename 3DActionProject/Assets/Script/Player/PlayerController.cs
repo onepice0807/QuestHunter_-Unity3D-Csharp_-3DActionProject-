@@ -148,9 +148,23 @@ public class PlayerController : MonoBehaviour
             Attack();
         }
 
-        if (Input.GetKeyDown(KeyCode.E))
+        if (Input.GetKeyDown(KeyCode.O))
         {
-            
+            isInventoryOpen = !isInventoryOpen;  // 인벤토리 창 토글
+            inventoryUI.SetActive(isInventoryOpen);
+        }
+
+        // 게임 스테이지 강제종료  
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (GameManager._Instance != null)
+            {
+                GameManager._Instance.GameExitPopUp();
+            }
+            else
+            {
+                Debug.LogError("인스턴스를 찾을 수 없습니다.");
+            }
         }
 
         // 인벤토리 창 열고 닫기

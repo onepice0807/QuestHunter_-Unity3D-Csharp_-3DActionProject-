@@ -4,6 +4,7 @@ public class LandTrigger : MonoBehaviour
 {
     public PlayerCamera _cameraController;  // 카메라 제어 스크립트
     public PlayerController _playerController; // player 제어 스크립트
+    public MonsterController _monsterController; // 적 제어 스크립트
 
     [SerializeField] private bool _isLand2 = false;  // 현재 구역이 Land2인지 여부
 
@@ -23,6 +24,7 @@ public class LandTrigger : MonoBehaviour
             {
                 _cameraController._isSideScrolling = true;
                 _playerController._isSideScrolling = true;
+                _monsterController._isSideScrolling = true;
 
             }
             // Land에 돌아오면 다시 쿼터뷰로 전환
@@ -30,6 +32,7 @@ public class LandTrigger : MonoBehaviour
             {
                 _cameraController._isSideScrolling = false;
                 _playerController._isSideScrolling = false;
+                _monsterController._isSideScrolling = false;
             }
         }
     }
