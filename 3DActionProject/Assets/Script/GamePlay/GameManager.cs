@@ -1,7 +1,5 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEditor.Timeline.TimelinePlaybackControls;
 
 public class GameManager : MonoBehaviour
 {
@@ -14,7 +12,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private WarrningPopUp _WarrningPopUp; // 게임종료를 위한 팝업
     [SerializeField] private Sprite[] _BgmOnOffSprite; // Bgm을 사용하기 위한 변수
     [SerializeField] GameObject _OptionPopUp; // 옵션(BGM)을 위한 팝업
-
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -80,10 +77,13 @@ public class GameManager : MonoBehaviour
     public void ShowOptionPopUp()
     {
         _OptionPopUp.gameObject.SetActive(true);
+        Time.timeScale = 0; // 게임 일시정지
     }
+
     public void CloseOptionPopUp()
     {
         _OptionPopUp.gameObject.SetActive(false);
+        Time.timeScale = 1; // 게임 재개
     }
 
     public void GameExitPopUp()
@@ -94,12 +94,14 @@ public class GameManager : MonoBehaviour
             _WarrningPopUp.SetDescription("정말로 게임을 나가시겠습니까?");
             _WarrningPopUp.SetOkButtonCallback(ExitGame); // OK 버튼에 ExitGame 메서드 연결
             _WarrningPopUp.SetCancelButtonCallback(CloseGameExitPopUp); // 취소 버튼에 팝업 닫기 연결
+            Time.timeScale = 0; // 게임 일시정지
         }
     }
 
     public void CloseGameExitPopUp()
     {
         _WarrningPopUp.gameObject.SetActive(false);
+        Time.timeScale = 1; // 게임 재개
     }
 
     public void ShowExitPopUp()
@@ -107,7 +109,7 @@ public class GameManager : MonoBehaviour
         _WarrningPopUp.gameObject.SetActive(true);
         _WarrningPopUp.SetDescription("정말로 나가시겠습니까?");
         _WarrningPopUp._oKCallFunc = ExitGame;
-        //_WarningPopUp._cancelFunc
+        Time.timeScale = 0; // 게임 일시정지
     }
 
     public void ExitGame()

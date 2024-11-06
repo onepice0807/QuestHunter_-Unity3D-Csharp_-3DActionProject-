@@ -8,12 +8,16 @@ public class ScenesManager : MonoBehaviour
     public static ScenesManager _Instance; // 싱글톤 패턴 사용
 
     [SerializeField] private string _sceneToLoad = "MainScene"; // 로드할 씬의 이름
+    [SerializeField] private string _titleSceneToLoad = "TitleScene"; // 타이틀 화면으로 이동을 위한
     [SerializeField] private float _delayBeforeLoad = 5.0f; // 씬 전환 전 대기 시간
     [SerializeField] private GameObject _dungeonOut; // 대기 시간을 무시한 던전 나가기 UI 표시
     [SerializeField] private Text _countdownText; // 대기 시간 카운트다운 UI 텍스트
     [SerializeField] public GameObject _gameOver; // 플레이어가 죽었을때 던전 나가기 UI 표시
     [SerializeField] private Text _gameOverText; // 게임오버 UI 텍스트
     [SerializeField] private Text _gameOverCountdownText; // 대기 시간 카운트다운 UI 텍스트
+    [SerializeField] public GameObject _gameClear; // 몬스터가 죽었을때 클리어 UI 표시
+    [SerializeField] private Text _gameClearText; // 게임클리어 UI 텍스트
+    [SerializeField] private Text _gameClearCountdownText; // 대기 시간 카운트다운 UI 텍스트
 
     private bool _playerInside = false; // 플레이어가 트리거 안에 있는지 여부 확인
 
@@ -22,6 +26,7 @@ public class ScenesManager : MonoBehaviour
     {
         _dungeonOut.SetActive(false);
         _gameOver.SetActive(false);
+        _gameClear.SetActive(false);
     }
 
     // 싱글톤 패턴을 구현하기 위해 Awake 메서드에서 인스턴스를 설정
@@ -68,10 +73,21 @@ public class ScenesManager : MonoBehaviour
         }
     }
 
+    // 타이틀 씬을 로드하는 메서드
+    public void LoadTitleScene()
+    {
+        SceneManager.LoadScene(_titleSceneToLoad);
+    }
+
     // 다음 스테이지로 이동할 때 호출되는 함수
     public void OnClickNextStage()
     {
         SceneManager.LoadScene(_sceneToLoad); // 지정된 씬으로 전환
+    }
+
+    public void OnStartButtionClick()
+    {
+        SceneManager.LoadScene(_sceneToLoad); // 시작버튼을 눌렀을때 지정된 씬으로 전환
     }
 
     // 플레이어가 사망 시 호출되는 함수
@@ -80,15 +96,10 @@ public class ScenesManager : MonoBehaviour
         StartCoroutine(GameOverSequence()); // 게임 오버 UI를 표시한 후 씬을 전환하는 코루틴 시작
     }
 
-    public void OnStartButtionClick()
-    {
-        SceneManager.LoadScene(_sceneToLoad); // 시작버튼을 눌렀을때 지정된 씬으로 전환
-    }
-
     // 게임 오버 UI 표시 후 씬을 전환하는 코루틴
     private IEnumerator GameOverSequence()
     {
-        _gameOver.SetActive(true); // 게임 오버 UI 활성화
+        _gameClear.SetActive(true); // 게임 오버 UI 활성화
         _gameOverText.text = "GAME OVER"; // 게임 오버 텍스트 설정
         Debug.Log("게임오버"); // 게임 오버 로그 출력
 
@@ -96,6 +107,29 @@ public class ScenesManager : MonoBehaviour
         while (delay > 0)
         {
             _gameOverCountdownText.text = delay.ToString("F1") + " 초 뒤에 이동합니다"; // 남은 시간 표시
+            delay -= Time.deltaTime; // 대기 시간 감소
+            yield return null; // 다음 프레임까지 대기
+        }
+
+        SceneManager.LoadScene(_sceneToLoad); // 지정된 씬으로 전환
+    }
+
+    public void OnClickGameClear()
+    {
+        StartCoroutine(GameClearSequence()); // 게임 오버 UI를 표시한 후 씬을 전환하는 코루틴 시작
+    }
+
+    // 게임 클리어 UI 표시 후 씬을 전환하는 코루틴
+    private IEnumerator GameClearSequence()
+    {
+        _gameClear.SetActive(true); // 게임 오버 UI 활성화
+        _gameClearText.text = "GAME CLEAR"; // 게임 클리어 텍스트 설정
+        Debug.Log("게임 클리어"); // 게임 클리어 로그 출력
+
+        float delay = 5.0f; // 대기 시간 설정
+        while (delay > 0)
+        {
+            _gameClearCountdownText.text = delay.ToString("F1") + " 초 뒤에 홈으로 이동합니다"; // 남은 시간 표시
             delay -= Time.deltaTime; // 대기 시간 감소
             yield return null; // 다음 프레임까지 대기
         }

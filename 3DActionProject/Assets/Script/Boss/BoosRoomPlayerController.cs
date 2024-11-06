@@ -278,7 +278,13 @@ public class BoosRoomPlayerController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(1))
         {
-            
+            Shield();
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            _animator.SetBool("Shield", false);
+            _isShieldActive = false;
         }
 
         // 인벤토리 창 열고 닫기

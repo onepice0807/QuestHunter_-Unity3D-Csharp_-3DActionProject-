@@ -7,15 +7,20 @@ public class BossController : MonoBehaviour
 {
     public Transform _target; // 적이 추적할 대상 (플레이어)
     private Animator _animator;
-    public float _attackRange = 6.5f; // 공격 범위
+    public float _attackRange = 12.5f; // 공격 범위
     public int _attackDamage = 10; // 공격력
     public float _chaseRange = 10.0f; // 추적 범위
-    public int _health = 100; // 적의 체력 (3번 맞으면 죽음)
+    public int _health = 100; // 보스의 체력
     private bool _isAttacking = false; // 공격 중인지 여부
     private NavMeshAgent _navAgent; // 적의 추적을 위한 NavMeshAgent
     private int _attackCounter = 0; // 공격 카운트, 3번 중 1번은 3개의 공격을 모두 실행
-    public GameObject _DamageTextPrefab; // 데미지 텍스트 프리팹
+    private int _damageNullifyCounter = 0; // 데미지 무효화 카운트
+    private bool _isPlayerInRange = false; // 플레이어가 공격 범위 내에 있는지 여부
     public Transform _DamageTextSpawnPosition; // 데미지 텍스트가 표시될 위치 (보스 위)
+    public GameObject _DamageTextPrefab; // 데미지 텍스트 프리팹
+    public Transform _FireVFXPosition; // 죽을때 화염이 표시될 위치
+    public Transform _FireVFXPosition2; // 죽을때 화염이 표시될 위치
+    public GameObject _FireVFXPrefab; // 화염 프리팹 (보스가 죽을때 사용)
     [SerializeField] Camera _mainCamera; // 메인카메라 참조값
     [SerializeField] public HealthBarBossRoom _healthBar; // HealthBar 참조 추가
 
@@ -23,6 +28,9 @@ public class BossController : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
         _navAgent = GetComponent<NavMeshAgent>();
+
+        // NavMeshAgent의 stoppingDistance를 _attackRange로 설정
+        _navAgent.stoppingDistance = _attackRange;
     }
 
     public void setTarget(Transform target)
@@ -35,17 +43,33 @@ public class BossController : MonoBehaviour
         if (_target != null)
         {
             float distanceToTarget = Vector3.Distance(transform.position, _target.position);
+            // Debug.Log("타겟과의 거리: " + distanceToTarget); // 거리 확인
 
             // 공격 범위 내에 있을 때
-            if (distanceToTarget <= _attackRange && !_isAttacking)
+            if (distanceToTarget <= _attackRange)
             {
-                StartCoroutine(AttackSequence());
+                if (!_isPlayerInRange) // 플레이어가 처음 공격 범위 내에 들어왔을 때
+                {
+                    _damageNullifyCounter = 0; // 데미지 무효화 카운트를 초기화
+                    _isPlayerInRange = true;
+                }
+
+                if (!_isAttacking)
+                {
+                    StartCoroutine(AttackSequence()); // 공격 실행
+                }
             }
-            // 추적 범위 내에 있을 때 추적
-            else if (distanceToTarget <= _chaseRange && distanceToTarget > _attackRange)
+            else
+            {
+                // 플레이어가 공격 범위를 벗어났을 때
+                _isPlayerInRange = false; // 범위 외로 나가면 초기화
+            }
+
+            // 추적 범위 내에 있지만 공격 범위 바깥에 있을 때 추적
+            if (distanceToTarget <= _chaseRange && distanceToTarget > _attackRange)
             {
                 _navAgent.isStopped = false;
-                _navAgent.SetDestination(_target.position); // 플레이어 추적
+                _navAgent.SetDestination(_target.position); // 플레이어를 추적
                 _animator.SetBool("Move", true); // 이동 애니메이션 설정
             }
             else
@@ -54,7 +78,6 @@ public class BossController : MonoBehaviour
                 _animator.SetBool("Move", false); // 이동 애니메이션 해제
             }
         }
-
     }
 
     IEnumerator AttackSequence()
@@ -65,10 +88,11 @@ public class BossController : MonoBehaviour
 
         _attackCounter++;
 
-        // 타겟을 바라보도록 회전
-        Vector3 direction = (_target.position - transform.position).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10.0f);
+        // 타겟을 정확히 바라보도록 회전
+        transform.LookAt(new Vector3(_target.position.x, transform.position.y, _target.position.z));
+
+        // 공격 시작 전 잠시 대기
+        yield return new WaitForSeconds(0.2f);
 
         // 공격 패턴을 순서대로 실행
         if (_attackCounter % 4 == 1) // 첫 번째 공격: Attack2 -> Attack1
@@ -94,6 +118,7 @@ public class BossController : MonoBehaviour
 
         _isAttacking = false; // 다시 추적할 수 있도록 상태 해제
     }
+
 
 
     IEnumerator Attack(string attackTrigger)
@@ -122,15 +147,20 @@ public class BossController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         // 보스가 공격 중이면 데미지를 무효화
+        // 보스가 공격 중일 때 데미지 무효화 카운트를 증가
         if (_isAttacking)
         {
-           // Debug.Log("보스가 공격 중이므로 데미지가 무효화되었습니다.");
-            return;
+            if (_damageNullifyCounter < 7)
+            {
+                _damageNullifyCounter++; // 무효화 카운트 증가
+                Debug.Log("보스가 공격 중이므로 데미지가 무효화되었습니다. 무효화 카운트: " + _damageNullifyCounter);
+                return; // 무효화 후 종료
+            }
         }
         else
         {
-           // Debug.Log($"플레이어가 보스에게 {_attackDamage}만큼 데미지를 입혔습니다");
-            ShowDamageText(_attackDamage);
+            Debug.Log($"플레이어가 보스에게 {_attackDamage}만큼 데미지를 입혔습니다");
+            
         }
 
         // 체력 감소
@@ -138,7 +168,7 @@ public class BossController : MonoBehaviour
 
         // 데미지 로그 출력
         Debug.Log($"적이 {damage} 데미지를 받았습니다. 남은 체력: {_health}");
-
+        ShowDamageText(_attackDamage);
         // 체력바 업데이트
         if (_healthBar != null)
         {
@@ -163,8 +193,35 @@ public class BossController : MonoBehaviour
     private void Die()
     {
         GameManager._Instance.AddMonster();
-        Debug.Log("적이 사망했습니다.");
-        Destroy(gameObject); // 보스 오브젝트 제거
+        Debug.Log("보스가 사망했습니다.");
+
+        // 죽음 애니메이션 실행
+        if (_animator != null)
+        {
+            _animator.SetBool("Die", true);
+        }
+
+        // 화염 효과 생성
+        if (_FireVFXPrefab != null)
+        {
+            Instantiate(_FireVFXPrefab, _FireVFXPosition.position, Quaternion.identity); // 첫 번째 위치에 화염 표시
+            Instantiate(_FireVFXPrefab, _FireVFXPosition2.position, Quaternion.identity); // 두 번째 위치에 화염 표시
+        }
+
+        // 3초 후에 보스를 제거하고 팝업을 표시
+        StartCoroutine(DestroyAfterDelay());
+    }
+
+    private IEnumerator DestroyAfterDelay()
+    {
+        // 3초 동안 대기
+        yield return new WaitForSeconds(3.0f);
+
+        // 보스 오브젝트 제거
+        Destroy(gameObject);
+
+        // 팝업 표시 (게임 매니저를 통해 호출)
+        ScenesManager._Instance.OnClickGameClear(); // OnClickGameClear 씬 매니저에서 호출
     }
 
     public void ShowDamageText(int damage)

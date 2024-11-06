@@ -4,7 +4,7 @@ public class BossRoomPlayerCamera : MonoBehaviour
 {
     [SerializeField] private Transform _PlayerTarget = null; // 플레이어를 타겟으로 가져오기 위한 변수
 
-    private float _distance = 3f;  // TPS 시점에서의 거리 (플레이어와 카메라 간의 거리)
+    private float _distance = 3.5f;  // TPS 시점에서의 거리 (플레이어와 카메라 간의 거리)
     private float _height = 1.5f;  // 카메라의 높이 (플레이어의 어깨 높이 정도)
     private float _rotationSpeed = 5f; // 카메라 회전 속도
 
