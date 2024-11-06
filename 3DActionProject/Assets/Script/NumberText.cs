@@ -8,12 +8,13 @@ public class NumberText : MonoBehaviour
     [SerializeField] private Vector3 _EndScale;
     [SerializeField] private float _Ypos;
 
-    private Camera _MainCamera;
+    private Transform _MainCameraTr;
     private Vector3 _movePos = new Vector3(0.0f, 0.0f, 0.0f); 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        _MainCameraTr = GameObject.Find("Main Camera").transform;
         this.transform.localScale = _StartScale;
         StartEffect();
     }
@@ -41,7 +42,9 @@ public class NumberText : MonoBehaviour
 
     private void FixedUpdate()
     {
-        this.transform.LookAt(Camera.main.gameObject.transform);
+        Quaternion rot = Quaternion.LookRotation(_MainCameraTr.position);
+        this.transform.rotation = rot;
+        //this.transform.LookAt(_MainCameraTr);
     }
 
     // Update is called once per frame

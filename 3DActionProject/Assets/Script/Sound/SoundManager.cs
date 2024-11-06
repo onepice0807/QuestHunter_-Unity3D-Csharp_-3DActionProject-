@@ -66,19 +66,11 @@ public class SoundManager : MonoBehaviour
         _musicOnOff = true;
     }
 
-    public void Play_ButtonClick_EffectSound()
+    public void Play_BossAttackSound()
     {
         if (_effectOnOff)
         {
-            Audio.PlayOneShot(_Effect_Sound[0]);
-        }
-    }
-
-    public void Play_BlockMatch_EffectSound()
-    {
-        if(_effectOnOff)
-        {
-            Audio.PlayOneShot(_Effect_Sound[1]);
+            Audio.PlayOneShot(_Effect_Sound[0]); // 3번째 사운드 재생
         }
     }
 

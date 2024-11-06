@@ -18,8 +18,12 @@ public class BossController : MonoBehaviour
     private bool _isPlayerInRange = false; // 플레이어가 공격 범위 내에 있는지 여부
     public Transform _DamageTextSpawnPosition; // 데미지 텍스트가 표시될 위치 (보스 위)
     public GameObject _DamageTextPrefab; // 데미지 텍스트 프리팹
+    public GameObject _AttackEffectPrefab; // 보스가 공격시 효과를 위한 프리팹
+    public GameObject _DamageEffectPrefab; // 플레이어의 공격을 맞을때 효과를 위한 프리팹
     public Transform _FireVFXPosition; // 죽을때 화염이 표시될 위치
     public Transform _FireVFXPosition2; // 죽을때 화염이 표시될 위치
+    public Transform _AttackEffectPosition; // 공격 효과가 나타날 위치
+    public Transform _AttackEffectPosition2; // 공격 효과가 나타날 위치
     public GameObject _FireVFXPrefab; // 화염 프리팹 (보스가 죽을때 사용)
     [SerializeField] Camera _mainCamera; // 메인카메라 참조값
     [SerializeField] public HealthBarBossRoom _healthBar; // HealthBar 참조 추가
@@ -138,7 +142,38 @@ public class BossController : MonoBehaviour
         // 검이 보스와 충돌한 경우
         if (collider.CompareTag("Sword"))
         {
+            // 데미지 적용
             TakeDamage(_attackDamage);
+
+            // 충돌 지점에 데미지 효과 생성
+            if (_DamageEffectPrefab != null)
+            {
+                // 충돌 지점 계산
+                Vector3 collisionPoint = collider.ClosestPoint(transform.position);
+                // 데미지 효과 프리팹을 충돌 지점에 생성
+                Instantiate(_DamageEffectPrefab, collisionPoint, Quaternion.identity);
+            }
+        }
+    }
+
+    // 보스가 공격할때 이팩트 효과를 주기위해 사용하는 함수
+    public void AttackEffectRight()
+    {
+        // 화염 효과 생성
+        if (_AttackEffectPrefab != null)
+        {
+            SoundManager.Instance.Play_BossAttackSound();
+            Instantiate(_AttackEffectPrefab, _AttackEffectPosition.position, Quaternion.identity); // 오른쪽발 위치에 공격 효과 표시
+        }
+    }
+
+    public void AttackEffectLeft()
+    {
+        // 화염 효과 생성
+        if (_AttackEffectPrefab != null)
+        {
+            SoundManager.Instance.Play_BossAttackSound();
+            Instantiate(_AttackEffectPrefab, _AttackEffectPosition2.position, Quaternion.identity); // 왼쪽발 위치에 공격 효과 표시
         }
     }
 
@@ -242,8 +277,8 @@ public class BossController : MonoBehaviour
                 numberObj.transform.position = offsetPosition;
 
                 // 데미지 텍스트가 항상 카메라를 향하도록 회전
-                numberObj.transform.LookAt(_mainCamera.transform.position, Vector3.up);
-                numberObj.transform.Rotate(_mainCamera.transform.forward); 
+               // numberObj.transform.LookAt(_mainCamera.transform.position, Vector3.up);
+                //numberObj.transform.Rotate(_mainCamera.transform.forward); 
             }
 
             // 데미지 값을 텍스트로 설정
