@@ -85,19 +85,6 @@ public class BoosRoomPlayerController : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider collider)
-    {
-        if (collider.CompareTag("ArmHit"))
-        {
-            BossController boss = _target.GetComponent<BossController>();
-            if (boss != null)
-            {
-               // UnityEngine.Debug.Log("플레이어가 보스의 공격에 맞았습니다!");
-                TakeDamage(_attackDamage);
-            }
-        }
-
-    }
 
     // 데미지를 받는 메서드
     public void TakeDamage(int damage)
@@ -270,6 +257,34 @@ public class BoosRoomPlayerController : MonoBehaviour
             _animator.SetBool("Shield", false);
         }
 
+        // 인벤토리 창 열고 닫기
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            isInventoryOpen = !isInventoryOpen;  // 인벤토리 창 토글
+            _inventoryUI.SetActive(isInventoryOpen);
+        }
+
+        // 인벤토리 창 닫기 (Esc)
+        if (Input.GetKeyDown(KeyCode.Escape) && isInventoryOpen)
+        {
+            isInventoryOpen = false;
+            _inventoryUI.SetActive(false);
+        }
+
+        // 이동속도 늘리기
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            _moveSpeed = 14.0f;
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            _moveSpeed = 7.0f;
+        }
+    }
+
+    private void MouseEventProcess()
+    {
         if (Input.GetMouseButtonDown(0))
         {
             Attack(); // 마우스 왼쪽 클릭으로 공격
@@ -286,35 +301,25 @@ public class BoosRoomPlayerController : MonoBehaviour
             _animator.SetBool("Shield", false);
             _isShieldActive = false;
         }
-
-        // 인벤토리 창 열고 닫기
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            isInventoryOpen = !isInventoryOpen;  // 인벤토리 창 토글
-            _inventoryUI.SetActive(isInventoryOpen);
-        }
-
-        // 인벤토리 창 닫기 (Esc)
-        if (Input.GetKeyDown(KeyCode.Escape) && isInventoryOpen)
-        {
-            isInventoryOpen = false;
-            _inventoryUI.SetActive(false);
-        }
-
-
     }
 
     void Update()
     {
-        KeyEventProcess();
-        if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f || Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)
+        // 공격 중일 때는 이동 및 회전 금지
+        MouseEventProcess();
+           
+        if (!_isAttacking)
         {
-            Move();
+            KeyEventProcess();
+            if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f || Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)
+            {
+                Move();
+            }
+            else
+            {
+                Stop();
+            }
         }
-        else
-        {
-            Stop();
-        }       
 
     }
 }

@@ -20,6 +20,8 @@ public class BossController : MonoBehaviour
     public GameObject _DamageTextPrefab; // 데미지 텍스트 프리팹
     public GameObject _AttackEffectPrefab; // 보스가 공격시 효과를 위한 프리팹
     public GameObject _DamageEffectPrefab; // 플레이어의 공격을 맞을때 효과를 위한 프리팹
+    private bool _isEffectActive = false; // 이펙트가 활성화되었는지 확인할 변수
+    private float _effectCooldown = 1.0f; // 이펙트 재생성 쿨타임
     public Transform _FireVFXPosition; // 죽을때 화염이 표시될 위치
     public Transform _FireVFXPosition2; // 죽을때 화염이 표시될 위치
     public Transform _AttackEffectPosition; // 공격 효과가 나타날 위치
@@ -142,18 +144,40 @@ public class BossController : MonoBehaviour
         // 검이 보스와 충돌한 경우
         if (collider.CompareTag("Sword"))
         {
+            _isEffectActive = true;
             // 데미지 적용
-            TakeDamage(_attackDamage);
 
-            // 충돌 지점에 데미지 효과 생성
-            if (_DamageEffectPrefab != null)
+            if (_isAttacking)
             {
-                // 충돌 지점 계산
-                Vector3 collisionPoint = collider.ClosestPoint(transform.position);
-                // 데미지 효과 프리팹을 충돌 지점에 생성
-                Instantiate(_DamageEffectPrefab, collisionPoint, Quaternion.identity);
+                if (_damageNullifyCounter < 2)
+                {
+                    _damageNullifyCounter++; // 무효화 카운트 증가
+                    Debug.Log("보스가 공격 중이므로 데미지가 무효화되었습니다. 무효화 카운트: " + _damageNullifyCounter);
+                    return; // 무효화 후 종료
+                }
+                else
+                {
+                    TakeDamage(_attackDamage);
+                    Debug.Log($"플레이어가 보스에게 {_attackDamage}만큼 데미지를 입혔습니다");
+                    // 충돌 지점에 데미지 효과 생성
+                    if (_DamageEffectPrefab != null)
+                    {
+                        // 충돌 지점 계산
+                        Vector3 collisionPoint = collider.ClosestPoint(transform.position);
+                        // 데미지 효과 프리팹을 충돌 지점에 생성
+                        Instantiate(_DamageEffectPrefab, collisionPoint, Quaternion.identity);
+                        StartCoroutine(ResetEffect()); // 쿨타임 후 이펙트 재생성 가능하도록 초기화
+                    }
+                }
             }
+            
         }
+    }
+
+    IEnumerator ResetEffect()
+    {
+        yield return new WaitForSeconds(_effectCooldown); // 쿨타임 대기
+        _isEffectActive = false; // 이펙트 초기화
     }
 
     // 보스가 공격할때 이팩트 효과를 주기위해 사용하는 함수
@@ -183,20 +207,6 @@ public class BossController : MonoBehaviour
     {
         // 보스가 공격 중이면 데미지를 무효화
         // 보스가 공격 중일 때 데미지 무효화 카운트를 증가
-        if (_isAttacking)
-        {
-            if (_damageNullifyCounter < 7)
-            {
-                _damageNullifyCounter++; // 무효화 카운트 증가
-                Debug.Log("보스가 공격 중이므로 데미지가 무효화되었습니다. 무효화 카운트: " + _damageNullifyCounter);
-                return; // 무효화 후 종료
-            }
-        }
-        else
-        {
-            Debug.Log($"플레이어가 보스에게 {_attackDamage}만큼 데미지를 입혔습니다");
-            
-        }
 
         // 체력 감소
         _health -= damage;
@@ -277,7 +287,7 @@ public class BossController : MonoBehaviour
                 numberObj.transform.position = offsetPosition;
 
                 // 데미지 텍스트가 항상 카메라를 향하도록 회전
-               // numberObj.transform.LookAt(_mainCamera.transform.position, Vector3.up);
+                // numberObj.transform.LookAt(_mainCamera.transform.position, Vector3.up);
                 //numberObj.transform.Rotate(_mainCamera.transform.forward); 
             }
 
