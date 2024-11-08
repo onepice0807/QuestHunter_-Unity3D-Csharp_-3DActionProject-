@@ -13,10 +13,8 @@ public class ScenesManager : MonoBehaviour
     [SerializeField] private GameObject _dungeonOut; // 대기 시간을 무시한 던전 나가기 UI 표시
     [SerializeField] private Text _countdownText; // 대기 시간 카운트다운 UI 텍스트
     [SerializeField] public GameObject _gameOver; // 플레이어가 죽었을때 던전 나가기 UI 표시
-    [SerializeField] private Text _gameOverText; // 게임오버 UI 텍스트
     [SerializeField] private Text _gameOverCountdownText; // 대기 시간 카운트다운 UI 텍스트
     [SerializeField] public GameObject _gameClear; // 몬스터가 죽었을때 클리어 UI 표시
-    [SerializeField] private Text _gameClearText; // 게임클리어 UI 텍스트
     [SerializeField] private Text _gameClearCountdownText; // 대기 시간 카운트다운 UI 텍스트
 
     private bool _playerInside = false; // 플레이어가 트리거 안에 있는지 여부 확인
@@ -77,12 +75,15 @@ public class ScenesManager : MonoBehaviour
     public void LoadTitleScene()
     {
         SceneManager.LoadScene(_titleSceneToLoad);
+        Cursor.visible = true; // 마우스 커서 표시
+        Cursor.lockState = CursorLockMode.None; // 마우스 잠금 해제
     }
 
     // 다음 스테이지로 이동할 때 호출되는 함수
     public void OnClickNextStage()
     {
         SceneManager.LoadScene(_sceneToLoad); // 지정된 씬으로 전환
+        Time.timeScale = 1; // 게임 재개
     }
 
     public void OnStartButtionClick()
@@ -100,7 +101,6 @@ public class ScenesManager : MonoBehaviour
     private IEnumerator GameOverSequence()
     {
         _gameClear.SetActive(true); // 게임 오버 UI 활성화
-        _gameOverText.text = "GAME OVER"; // 게임 오버 텍스트 설정
         Debug.Log("게임오버"); // 게임 오버 로그 출력
 
         float delay = 3.0f; // 대기 시간 설정
@@ -123,7 +123,6 @@ public class ScenesManager : MonoBehaviour
     private IEnumerator GameClearSequence()
     {
         _gameClear.SetActive(true); // 게임 오버 UI 활성화
-        _gameClearText.text = "GAME CLEAR"; // 게임 클리어 텍스트 설정
         Debug.Log("게임 클리어"); // 게임 클리어 로그 출력
 
         float delay = 5.0f; // 대기 시간 설정

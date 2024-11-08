@@ -10,8 +10,9 @@ public class GameManager : MonoBehaviour
     public Text _monsterText; // 몬스터 수를 표시할 Text
     private int _monsterCount = 0; // 몬스터 처리수를 저장하는 변수
     [SerializeField] private WarrningPopUp _WarrningPopUp; // 게임종료를 위한 팝업
-    [SerializeField] private Sprite[] _BgmOnOffSprite; // Bgm을 사용하기 위한 변수
     [SerializeField] GameObject _OptionPopUp; // 옵션(BGM)을 위한 팝업
+    [SerializeField] private Sprite[] _BgmOnOffSprite; // Bgm 이미지를 위한 Splite
+    [SerializeField] private Sprite[] _SoundEffectOnOffSprite; // 효과음의 이미지를 위한 Splite
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -74,16 +75,39 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void SoundEffectOnOff(GameObject btn)
+    {
+        if (SoundManager.Instance.EffectOnOff)
+        {
+            SoundManager.Instance.EffectOnOff = false;
+            btn.GetComponent<Image>().sprite = _SoundEffectOnOffSprite[0];
+        }
+        else
+        {
+            SoundManager.Instance.EffectOnOff = true;
+            btn.GetComponent<Image>().sprite = _SoundEffectOnOffSprite[1];
+        }
+    }
+
     public void ShowOptionPopUp()
     {
         _OptionPopUp.gameObject.SetActive(true);
         Time.timeScale = 0; // 게임 일시정지
+        Cursor.visible = true; // 마우스 커서 표시
+        Cursor.lockState = CursorLockMode.None; // 마우스 잠금 해제
     }
 
     public void CloseOptionPopUp()
     {
         _OptionPopUp.gameObject.SetActive(false);
         Time.timeScale = 1; // 게임 재개
+        Cursor.visible = false; // 마우스 커서 숨김
+        Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
+    }
+
+    public void CloseTitleOption()
+    {
+        _OptionPopUp.gameObject.SetActive(false);
     }
 
     public void GameExitPopUp()
@@ -92,9 +116,11 @@ public class GameManager : MonoBehaviour
         {
             _WarrningPopUp.gameObject.SetActive(true);
             _WarrningPopUp.SetDescription("정말로 게임을 나가시겠습니까?");
+            Time.timeScale = 0; // 게임 일시정지
+            Cursor.visible = true; // 마우스 커서 표시
+            Cursor.lockState = CursorLockMode.None; // 마우스 잠금 해제
             _WarrningPopUp.SetOkButtonCallback(ExitGame); // OK 버튼에 ExitGame 메서드 연결
             _WarrningPopUp.SetCancelButtonCallback(CloseGameExitPopUp); // 취소 버튼에 팝업 닫기 연결
-            Time.timeScale = 0; // 게임 일시정지
         }
     }
 
@@ -102,6 +128,8 @@ public class GameManager : MonoBehaviour
     {
         _WarrningPopUp.gameObject.SetActive(false);
         Time.timeScale = 1; // 게임 재개
+        Cursor.visible = false; // 마우스 커서 숨김
+        Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
     }
 
     public void ShowExitPopUp()

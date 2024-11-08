@@ -74,11 +74,11 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public void Play_StageClearSound()
+    public void Play_PlayerAttackSound()
     {
         if (_effectOnOff)
         {
-            Audio.PlayOneShot(_Effect_Sound[2]);
+            Audio.PlayOneShot(_Effect_Sound[1]);
         }
     }
 

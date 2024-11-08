@@ -14,8 +14,8 @@ public class PlayerController : MonoBehaviour
 
     public int playerDamage = 1; // 플레이어가 적에게 데미지 부여
 
-    public GameObject inventoryUI; // 인벤토리 UI 창 (활성/비활성)
-    private bool isInventoryOpen = false; // 인벤토리 창이 열렸는지 여부
+    public GameObject _inventoryUI; // 인벤토리 UI 창 (활성/비활성)
+    private bool _isInventoryOpen = false; // 인벤토리 창이 열렸는지 여부
 
     public bool _isSideScrolling = false;  // 카메라가 횡스크롤 모드인지 여부를 나타내는 변수
 
@@ -148,10 +148,13 @@ public class PlayerController : MonoBehaviour
             Attack();
         }
 
+        // O키를 눌렀을때 옵션PopUp 열기
         if (Input.GetKeyDown(KeyCode.O))
         {
-            isInventoryOpen = !isInventoryOpen;  // 인벤토리 창 토글
-            inventoryUI.SetActive(isInventoryOpen);
+            if(GameManager._Instance != null)
+            {
+                GameManager._Instance.ShowOptionPopUp(); // GameManager에서 ShowOptionPopUp호출
+            }
         }
 
         // 게임 스테이지 강제종료  
@@ -170,17 +173,9 @@ public class PlayerController : MonoBehaviour
         // 인벤토리 창 열고 닫기
         if (Input.GetKeyDown(KeyCode.I))
         {
-            isInventoryOpen = !isInventoryOpen;  // 인벤토리 창 토글
-            inventoryUI.SetActive(isInventoryOpen);
+            _isInventoryOpen = !_isInventoryOpen;  // 인벤토리 창 토글
+            _inventoryUI.SetActive(_isInventoryOpen);
         }
-
-        // 인벤토리 창 닫기 (Esc)
-        if (Input.GetKeyDown(KeyCode.Escape) && isInventoryOpen)
-        {
-            isInventoryOpen = false;
-            inventoryUI.SetActive(false);
-        }
-
 
     }
 

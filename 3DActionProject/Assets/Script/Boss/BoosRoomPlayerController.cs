@@ -21,7 +21,7 @@ public class BoosRoomPlayerController : MonoBehaviour
     public int _attackDamage = 10; // 공격력
 
     public GameObject _inventoryUI; // 인벤토리 UI 창 (활성/비활성)
-    private bool isInventoryOpen = false; // 인벤토리 창이 열렸는지 여부
+    private bool _isInventoryOpen = false; // 인벤토리 창이 열렸는지 여부
 
     private int _shieldHitCount = 0; // 방어 상태에서 공격받은 횟수
     private bool _isShieldActive = false; // 방어 상태 여부
@@ -29,7 +29,6 @@ public class BoosRoomPlayerController : MonoBehaviour
     [SerializeField] public HealthBarBossRoom _healthBar; // HealthBar 참조 추가
     private int _leftClickCount = 0; // 왼쪽 마우스 버튼 클릭 횟수
     private int _rightClickCount = 0; // 오른쪽 마우스 버튼 클릭 횟수
-    [SerializeField] public GameObject _positionChange; // 포지션 값 바꾸기 위한 참조값
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -260,15 +259,19 @@ public class BoosRoomPlayerController : MonoBehaviour
         // 인벤토리 창 열고 닫기
         if (Input.GetKeyDown(KeyCode.I))
         {
-            isInventoryOpen = !isInventoryOpen;  // 인벤토리 창 토글
-            _inventoryUI.SetActive(isInventoryOpen);
-        }
+            _isInventoryOpen = !_isInventoryOpen; // 인벤토리 창 토글
+            _inventoryUI.SetActive(_isInventoryOpen);
+            Time.timeScale = 0; // 게임 일시정지
+            Cursor.visible = true; // 마우스 커서를 표시
+            Cursor.lockState = CursorLockMode.None; // 마우스 잠금을 해제
 
-        // 인벤토리 창 닫기 (Esc)
-        if (Input.GetKeyDown(KeyCode.Escape) && isInventoryOpen)
-        {
-            isInventoryOpen = false;
-            _inventoryUI.SetActive(false);
+            if (!_isInventoryOpen) // 인벤토리 창이 닫힌 경우
+            {
+                _inventoryUI.SetActive(false); // 인벤토리 UI 비활성화
+                Time.timeScale = 1; // 게임 재개
+                Cursor.visible = false; // 마우스 커서 숨김
+                Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
+            }
         }
 
         // 이동속도 늘리기
@@ -280,6 +283,31 @@ public class BoosRoomPlayerController : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             _moveSpeed = 7.0f;
+        }
+
+        // O키를 눌렀을때 옵션PopUp 열기
+        if (Input.GetKeyDown(KeyCode.O))
+        {
+            if (GameManager._Instance != null)
+            {
+                GameManager._Instance.ShowOptionPopUp(); // GameManager에서 ShowOptionPopUp호출
+            }
+        }
+
+        // 게임 스테이지 강제종료  
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Time.timeScale = 0; // 게임 일시정지
+            Cursor.visible = true; // 마우스 커서를 표시
+            Cursor.lockState = CursorLockMode.None; // 마우스잠금을 해제
+            if (GameManager._Instance != null)
+            {
+                GameManager._Instance.GameExitPopUp();
+            }
+            else
+            {
+                Debug.LogError("인스턴스를 찾을 수 없습니다.");
+            }
         }
     }
 

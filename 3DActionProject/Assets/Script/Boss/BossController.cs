@@ -159,6 +159,7 @@ public class BossController : MonoBehaviour
                 {
                     TakeDamage(_attackDamage);
                     Debug.Log($"플레이어가 보스에게 {_attackDamage}만큼 데미지를 입혔습니다");
+                    SoundManager.Instance.Play_PlayerAttackSound();
                     // 충돌 지점에 데미지 효과 생성
                     if (_DamageEffectPrefab != null)
                     {
