@@ -82,6 +82,22 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public void Play_PlayerDoungonAttackSound()
+    {
+        if (_effectOnOff)
+        {
+            Audio.PlayOneShot(_Effect_Sound[3]);
+        }
+    }
+
+    public void Play_CoinSound()
+    {
+        if (_effectOnOff)
+        {
+            Audio.PlayOneShot(_Effect_Sound[2]);
+        }
+    }
+
 
     public void Play_BackgroundMusic()
     {

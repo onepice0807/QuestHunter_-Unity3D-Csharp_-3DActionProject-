@@ -84,11 +84,16 @@ public class ScenesManager : MonoBehaviour
     {
         SceneManager.LoadScene(_sceneToLoad); // 지정된 씬으로 전환
         Time.timeScale = 1; // 게임 재개
+        Cursor.visible = false; // 마우스 커서 숨김
+        Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
     }
 
     public void OnStartButtionClick()
     {
         SceneManager.LoadScene(_sceneToLoad); // 시작버튼을 눌렀을때 지정된 씬으로 전환
+        Time.timeScale = 1; // 게임 재개
+        Cursor.visible = false; // 마우스 커서 숨김
+        Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
     }
 
     // 플레이어가 사망 시 호출되는 함수
@@ -100,7 +105,7 @@ public class ScenesManager : MonoBehaviour
     // 게임 오버 UI 표시 후 씬을 전환하는 코루틴
     private IEnumerator GameOverSequence()
     {
-        _gameClear.SetActive(true); // 게임 오버 UI 활성화
+        _gameOver.SetActive(true); // 게임 오버 UI 활성화
         Debug.Log("게임오버"); // 게임 오버 로그 출력
 
         float delay = 3.0f; // 대기 시간 설정

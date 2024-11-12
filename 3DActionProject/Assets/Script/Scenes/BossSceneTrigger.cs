@@ -23,6 +23,9 @@ public class BossSceneTrigger : MonoBehaviour
     {
         if (collider.CompareTag("Player")) // 태그가 'Player'인 경우에만 실행
         {
+            Time.timeScale = 0; // 게임 일시정지
+            Cursor.visible = true; // 마우스 커서 표시
+            Cursor.lockState = CursorLockMode.None; // 마우스 잠금 해제
             _playerInside = true;
             _popUp.SetActive(true);
             _popUpText.text = "보스룸에 입장하시겠습니까?";
@@ -31,14 +34,19 @@ public class BossSceneTrigger : MonoBehaviour
     }
     public void OnClickNextStage()
     {
+        Time.timeScale = 1; // 게임 재개
+        Cursor.visible = false; // 마우스 커서 숨김
+        Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
         SceneManager.LoadScene(_sceneToLoad);
-
     }
 
     public void OnClickCloseButton()
     {
         _playerInside = false;
         _popUp.SetActive(false);
+        Time.timeScale = 1; // 게임 재개
+        Cursor.visible = false; // 마우스 커서 숨김
+        Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
     }
 
 }

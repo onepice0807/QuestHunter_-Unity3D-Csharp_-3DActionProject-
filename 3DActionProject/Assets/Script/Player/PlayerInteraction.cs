@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,29 +50,35 @@ public class PlayerInteraction : MonoBehaviour
     }
 
     // 플레이어 사망 처리 메서드
+    // 플레이어 사망 처리 메서드
     private void Die()
     {
         Debug.Log("플레이어가 사망했습니다.");
-        // 사망 처리 로직 (게임 오버, 리스폰 등)
-        _animator.SetTrigger("Die");
 
-        if (_gameOverUI != null)
+        // 사망 애니메이션 실행
+        if (_animator != null)
         {
-            _gameOverUI.SetActive(true);
-            if (ScenesManager._Instance != null)
-            {
-                ScenesManager._Instance.OnClickGameOver();
-            }
-            else
-            {
-                Debug.LogError("ScenesManager 인스턴스를 찾을 수 없습니다.");
-            }
+            _animator.SetTrigger("Die");
+        }
+
+        // 애니메이션이 끝난 후 게임 오버 호출
+        StartCoroutine(WaitForDeathAnimation());
+    }
+
+    // 사망 애니메이션 완료 후 게임 오버 호출
+    private IEnumerator WaitForDeathAnimation()
+    {
+        yield return new WaitForSeconds(2.0f); // 애니메이션 길이에 맞게 조정
+
+        // 싱글톤을 통해 ScenesManager의 OnClickGameOver 호출
+        if (ScenesManager._Instance != null)
+        {
+            ScenesManager._Instance.OnClickGameOver();
         }
         else
         {
-            Debug.LogWarning("_gameOverUI가 할당되지 않았습니다.");
+            Debug.LogError("ScenesManager 인스턴스를 찾을 수 없습니다.");
         }
-
     }
 
     // 몬스터와의 충돌을 감지하는 메서드

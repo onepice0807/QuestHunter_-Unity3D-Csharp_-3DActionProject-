@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 
@@ -62,7 +61,7 @@ public class BoosRoomPlayerController : MonoBehaviour
             this.transform.rotation = Quaternion.LookRotation(_direct);
             _animator.SetBool("Move", true);
         }
-       
+
     }
 
     void Stop()
@@ -82,6 +81,15 @@ public class BoosRoomPlayerController : MonoBehaviour
             Destroy(collision.gameObject);
             GameManager._Instance.AddCoin(); // 코인 수 증가
         }
+    }
+
+    private void OnTriggerEnter(Collider collider)
+    {
+        if (collider.CompareTag("BossHit"))
+        {
+            TakeDamage(_attackDamage);
+        }
+
     }
 
 
@@ -239,6 +247,26 @@ public class BoosRoomPlayerController : MonoBehaviour
         _animator.SetBool("Shield", true);
     }
 
+    private void ToggleInventory()
+    {
+        _isInventoryOpen = !_isInventoryOpen;
+
+        if (_isInventoryOpen)
+        {
+            _inventoryUI.SetActive(true);
+            Time.timeScale = 0; // 게임 일시정지
+            Cursor.visible = true; // 마우스 커서 표시
+            Cursor.lockState = CursorLockMode.None; // 마우스 잠금 해제
+        }
+        else
+        {
+            _inventoryUI.SetActive(false);
+            Time.timeScale = 1; // 게임 재개
+            Cursor.visible = false; // 마우스 커서 숨김
+            Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
+        }
+    }
+
     private void KeyEventProcess()
     {
         // 키보드 입력 처리 (항상 감지)
@@ -254,24 +282,6 @@ public class BoosRoomPlayerController : MonoBehaviour
         else if (Input.GetKeyUp(KeyCode.L))
         {
             _animator.SetBool("Shield", false);
-        }
-
-        // 인벤토리 창 열고 닫기
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            _isInventoryOpen = !_isInventoryOpen; // 인벤토리 창 토글
-            _inventoryUI.SetActive(_isInventoryOpen);
-            Time.timeScale = 0; // 게임 일시정지
-            Cursor.visible = true; // 마우스 커서를 표시
-            Cursor.lockState = CursorLockMode.None; // 마우스 잠금을 해제
-
-            if (!_isInventoryOpen) // 인벤토리 창이 닫힌 경우
-            {
-                _inventoryUI.SetActive(false); // 인벤토리 UI 비활성화
-                Time.timeScale = 1; // 게임 재개
-                Cursor.visible = false; // 마우스 커서 숨김
-                Cursor.lockState = CursorLockMode.Locked; // 마우스 잠금
-            }
         }
 
         // 이동속도 늘리기
@@ -333,12 +343,25 @@ public class BoosRoomPlayerController : MonoBehaviour
 
     void Update()
     {
-        // 공격 중일 때는 이동 및 회전 금지
-        MouseEventProcess();
-           
-        if (!_isAttacking)
+        // 인벤토리 UI 토글 처리
+        if (Input.GetKeyDown(KeyCode.I))
         {
+            ToggleInventory();
+            return; // 인벤토리 토글 시 다른 입력은 처리하지 않음
+        }
+
+        // 현재 애니메이션 상태를 가져옴
+        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+
+        // 공격 애니메이션이 실행 중일 때 이동 금지
+        bool isAttackAnimationPlaying = stateInfo.IsName("Attack") || stateInfo.IsName("Attack2") || stateInfo.IsName("Attack3");
+
+        if (!isAttackAnimationPlaying)
+        {
+            // 공격 애니메이션이 아닐 때만 이동 및 키 입력 처리
+            MouseEventProcess();
             KeyEventProcess();
+
             if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f || Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)
             {
                 Move();
@@ -348,6 +371,10 @@ public class BoosRoomPlayerController : MonoBehaviour
                 Stop();
             }
         }
-
+        else
+        {
+            // 공격 애니메이션이 실행 중일 때는 이동을 멈춤
+            Stop();
+        }
     }
 }
