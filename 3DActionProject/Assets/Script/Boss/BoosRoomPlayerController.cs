@@ -8,50 +8,56 @@ public class BoosRoomPlayerController : MonoBehaviour
     private float _horizon = 0.0f;
     private float _moveSpeed = 7.0f;
     private Vector3 _direct;
-    private Vector3 _lastPosition; // ¸¶Áö¸· À§Ä¡¸¦ ÀúÀåÇÒ º¯¼ö
+    private Vector3 _lastPosition; // ë§ˆì§€ë§‰ ìœ„ì¹˜ë¥¼ ì €ì¥í•  ë³€ìˆ˜
     private CharacterController _playerController;
     private Animator _animator;
-    private bool _isDamaged = false; // ÇÃ·¹ÀÌ¾î°¡ µ¥¹ÌÁö¸¦ ¹Ş¾Ò´ÂÁö È®ÀÎÇÏ´Â º¯¼ö
-    public int _health = 100; // ÇÃ·¹ÀÌ¾î Ã¼·Â
-    public GameObject _sword; // ÇÃ·¹ÀÌ¾îÀÇ °Ë¿¡ ´ëÇÑ ÂüÁ¶
-    public bool _isAttacking = false; // °ø°İ È°¼ºÈ­ »óÅÂ
+    private bool _isDamaged = false; // í”Œë ˆì´ì–´ê°€ ë°ë¯¸ì§€ë¥¼ ë°›ì•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” ë³€ìˆ˜
+    public int _health = 100; // í”Œë ˆì´ì–´ ì²´ë ¥
+    public GameObject _sword; // í”Œë ˆì´ì–´ì˜ ê²€ì— ëŒ€í•œ ì°¸ì¡°
+    private Collider _swordCollider; // ê²€ì˜ íŠ¸ë¦¬ê±° ê´€ë¦¬
+    public bool _isAttacking = false; // ê³µê²© í™œì„±í™” ìƒíƒœ
 
-    public Transform _target; // ÀûÀÌ ÃßÀûÇÒ ´ë»ó (ÇÃ·¹ÀÌ¾î)
-    public int _attackDamage = 10; // °ø°İ·Â
+    public Transform _target; // ì ì´ ì¶”ì í•  ëŒ€ìƒ (í”Œë ˆì´ì–´)
+    public int _attackDamage = 10; // ê³µê²©ë ¥
+    public GameObject _AttackEffectPrefab; // ë³´ìŠ¤ê°€ ê³µê²©ì‹œ íš¨ê³¼ë¥¼ ìœ„í•œ í”„ë¦¬íŒ¹
+    private bool _isEffectActive = false; // ì´í™íŠ¸ê°€ í™œì„±í™”ë˜ì—ˆëŠ”ì§€ í™•ì¸í•  ë³€ìˆ˜
+    private float _effectCooldown = 1.0f; // ì´í™íŠ¸ ì¬ìƒì„± ì¿¨íƒ€ì„
 
-    public GameObject _inventoryUI; // ÀÎº¥Åä¸® UI Ã¢ (È°¼º/ºñÈ°¼º)
-    private bool _isInventoryOpen = false; // ÀÎº¥Åä¸® Ã¢ÀÌ ¿­·È´ÂÁö ¿©ºÎ
+    public GameObject _inventoryUI; // ì¸ë²¤í† ë¦¬ UI ì°½ (í™œì„±/ë¹„í™œì„±)
+    private bool _isInventoryOpen = false; // ì¸ë²¤í† ë¦¬ ì°½ì´ ì—´ë ¸ëŠ”ì§€ ì—¬ë¶€
 
-    private int _shieldHitCount = 0; // ¹æ¾î »óÅÂ¿¡¼­ °ø°İ¹ŞÀº È½¼ö
-    private bool _isShieldActive = false; // ¹æ¾î »óÅÂ ¿©ºÎ
-    private bool _isWaiting = false; // ´ë±â »óÅÂ ¿©ºÎ
-    [SerializeField] public HealthBarBossRoom _healthBar; // HealthBar ÂüÁ¶ Ãß°¡
-    private int _leftClickCount = 0; // ¿ŞÂÊ ¸¶¿ì½º ¹öÆ° Å¬¸¯ È½¼ö
-    private int _rightClickCount = 0; // ¿À¸¥ÂÊ ¸¶¿ì½º ¹öÆ° Å¬¸¯ È½¼ö
+    private int _shieldHitCount = 0; // ë°©ì–´ ìƒíƒœì—ì„œ ê³µê²©ë°›ì€ íšŸìˆ˜
+    private bool _isShieldActive = false; // ë°©ì–´ ìƒíƒœ ì—¬ë¶€
+    private bool _isWaiting = false; // ëŒ€ê¸° ìƒíƒœ ì—¬ë¶€
+    [SerializeField] public HealthBarBossRoom _healthBar; // HealthBar ì°¸ì¡° ì¶”ê°€
+    private int _leftClickCount = 0; // ì™¼ìª½ ë§ˆìš°ìŠ¤ ë²„íŠ¼ í´ë¦­ íšŸìˆ˜
+    private int _rightClickCount = 0; // ì˜¤ë¥¸ìª½ ë§ˆìš°ìŠ¤ ë²„íŠ¼ í´ë¦­ íšŸìˆ˜
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         _playerController = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
+        _swordCollider = _sword.GetComponent<Collider>();
+        _swordCollider.enabled = false; // ì‹œì‘ ì‹œ ê²€ì˜ íŠ¸ë¦¬ê±° ë¹„í™œì„±í™”
     }
 
     void Move()
     {
-        if (_isWaiting || _isAttacking || _isShieldActive) return; // ´ë±â »óÅÂÀÏ ¶§ Å° ÀÔ·Â Ã³¸® ºÒ°¡
+        if (_isWaiting || _isAttacking || _isShieldActive) return; // ëŒ€ê¸° ìƒíƒœì¼ ë•Œ í‚¤ ì…ë ¥ ì²˜ë¦¬ ë¶ˆê°€
 
-        // Ä«¸Ş¶ó ¹æÇâÀ» ±âÁØÀ¸·Î ÇÃ·¹ÀÌ¾î ÀÌµ¿ ¹æÇâÀ» ¼³Á¤
-        Transform cameraTransform = Camera.main.transform; // ¸ŞÀÎ Ä«¸Ş¶óÀÇ Transform °¡Á®¿À±â
+        // ì¹´ë©”ë¼ ë°©í–¥ì„ ê¸°ì¤€ìœ¼ë¡œ í”Œë ˆì´ì–´ ì´ë™ ë°©í–¥ì„ ì„¤ì •
+        Transform cameraTransform = Camera.main.transform; // ë©”ì¸ ì¹´ë©”ë¼ì˜ Transform ê°€ì ¸ì˜¤ê¸°
 
-        // Ä«¸Ş¶óÀÇ forward ¹æÇâ¿¡¼­ YÃàÀ» ¹«½ÃÇÑ ÀÌµ¿ ¹æÇâ °è»ê
+        // ì¹´ë©”ë¼ì˜ forward ë°©í–¥ì—ì„œ Yì¶•ì„ ë¬´ì‹œí•œ ì´ë™ ë°©í–¥ ê³„ì‚°
         Vector3 forward = new Vector3(cameraTransform.forward.x, 0, cameraTransform.forward.z).normalized;
         Vector3 right = new Vector3(cameraTransform.right.x, 0, cameraTransform.right.z).normalized;
 
-        // ÀÔ·Â¿¡ µû¸¥ ÀÌµ¿ ¹æÇâ ¼³Á¤ (Ä«¸Ş¶ó¸¦ ±âÁØÀ¸·Î Àü/ÈÄ/ÁÂ/¿ì)
+        // ì…ë ¥ì— ë”°ë¥¸ ì´ë™ ë°©í–¥ ì„¤ì • (ì¹´ë©”ë¼ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ì „/í›„/ì¢Œ/ìš°)
         _vertical = Input.GetAxis("Vertical");
         _horizon = Input.GetAxis("Horizontal");
 
-        // ÃÖÁ¾ ÀÌµ¿ ¹æÇâ °è»ê (Ä«¸Ş¶ó¸¦ ±âÁØÀ¸·Î ¹æÇâ Á¤·Ä)
+        // ìµœì¢… ì´ë™ ë°©í–¥ ê³„ì‚° (ì¹´ë©”ë¼ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë°©í–¥ ì •ë ¬)
         _direct = (forward * _vertical + right * _horizon).normalized;
 
         this.transform.position += _direct * _moveSpeed * Time.deltaTime;
@@ -76,10 +82,10 @@ public class BoosRoomPlayerController : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
 
-        if (collision.gameObject.tag.Contains("Coin")) // ÄÚÀÎÀÌ¶û Ãæµ¹ ½Ã ÄÚÀÎÀ» »ç¶óÁö°Ô ÇÏ°í ui ÄÚÀÎ ¼ö Áõ°¡
+        if (collision.gameObject.tag.Contains("Coin")) // ì½”ì¸ì´ë‘ ì¶©ëŒ ì‹œ ì½”ì¸ì„ ì‚¬ë¼ì§€ê²Œ í•˜ê³  ui ì½”ì¸ ìˆ˜ ì¦ê°€
         {
             Destroy(collision.gameObject);
-            GameManager._Instance.AddCoin(); // ÄÚÀÎ ¼ö Áõ°¡
+            GameManager._Instance.AddCoin(); // ì½”ì¸ ìˆ˜ ì¦ê°€
         }
     }
 
@@ -88,26 +94,37 @@ public class BoosRoomPlayerController : MonoBehaviour
         if (collider.CompareTag("BossHit"))
         {
             TakeDamage(_attackDamage);
+            // ì¶©ëŒ ì§€ì  ê³„ì‚°
+            Vector3 collisionPoint = collider.ClosestPoint(transform.position);
+            // ë°ë¯¸ì§€ íš¨ê³¼ í”„ë¦¬íŒ¹ì„ ì¶©ëŒ ì§€ì ì— ìƒì„±
+            Instantiate(_AttackEffectPrefab, collisionPoint, Quaternion.identity);
+            StartCoroutine(ResetEffect()); // ì¿¨íƒ€ì„ í›„ ì´í™íŠ¸ ì¬ìƒì„± ê°€ëŠ¥í•˜ë„ë¡ ì´ˆê¸°í™”
         }
 
     }
 
+    IEnumerator ResetEffect()
+    {
+        yield return new WaitForSeconds(_effectCooldown); // ì¿¨íƒ€ì„ ëŒ€ê¸°
+        _isEffectActive = false; // ì´í™íŠ¸ ì´ˆê¸°í™”
+    }
 
-    // µ¥¹ÌÁö¸¦ ¹Ş´Â ¸Ş¼­µå
+
+    // ë°ë¯¸ì§€ë¥¼ ë°›ëŠ” ë©”ì„œë“œ
     public void TakeDamage(int damage)
     {
-        if (_isWaiting) return; // ´ë±â »óÅÂÀÏ ¶§´Â µ¥¹ÌÁö ¹«½Ã
+        if (_isWaiting) return; // ëŒ€ê¸° ìƒíƒœì¼ ë•ŒëŠ” ë°ë¯¸ì§€ ë¬´ì‹œ
 
         if (_isShieldActive)
         {
             _shieldHitCount++;
-            Debug.Log($"¹æ¾î »óÅÂ·Î {_shieldHitCount}¹øÂ° °ø°İÀ» ¹Ş¾Ò½À´Ï´Ù.");
+            Debug.Log($"ë°©ì–´ ìƒíƒœë¡œ {_shieldHitCount}ë²ˆì§¸ ê³µê²©ì„ ë°›ì•˜ìŠµë‹ˆë‹¤.");
             _animator.SetTrigger("ShieldHit");
             if (_shieldHitCount >= 5)
             {
                 StartCoroutine(ShieldBreak());
             }
-            // ¹æ¾î ÁßÀÌ¹Ç·Î µ¥¹ÌÁö¸¦ ¹ŞÁö ¾ÊÀ½
+            // ë°©ì–´ ì¤‘ì´ë¯€ë¡œ ë°ë¯¸ì§€ë¥¼ ë°›ì§€ ì•ŠìŒ
             return;
         }
 
@@ -121,12 +138,12 @@ public class BoosRoomPlayerController : MonoBehaviour
                 _animator.SetTrigger("Damaged");
             }
 
-            Debug.Log($"ÇÃ·¹ÀÌ¾î°¡ {damage} µ¥¹ÌÁö¸¦ ¹Ş¾Ò½À´Ï´Ù. ³²Àº Ã¼·Â: {_health}");
+            Debug.Log($"í”Œë ˆì´ì–´ê°€ {damage} ë°ë¯¸ì§€ë¥¼ ë°›ì•˜ìŠµë‹ˆë‹¤. ë‚¨ì€ ì²´ë ¥: {_health}");
 
-            // Ã¼·Â¹Ù ¾÷µ¥ÀÌÆ®
+            // ì²´ë ¥ë°” ì—…ë°ì´íŠ¸
             if (_healthBar != null)
             {
-                _healthBar.TakeDamage(_health); // Ã¼·Â¹ÙÀÇ TakeDamage¿¡ °¨¼ÒÇÒ µ¥¹ÌÁö Àü´Ş
+                _healthBar.TakeDamage(_health); // ì²´ë ¥ë°”ì˜ TakeDamageì— ê°ì†Œí•  ë°ë¯¸ì§€ ì „ë‹¬
             }
 
             if (_health == 0)
@@ -139,40 +156,40 @@ public class BoosRoomPlayerController : MonoBehaviour
     }
     IEnumerator ShieldBreak()
     {
-        _isWaiting = true; // ´ë±â »óÅÂ ½ÃÀÛ
-        _isShieldActive = false; // ¹æ¾î »óÅÂ ÇØÁ¦
-        _animator.SetBool("Shield", false); // ¹æ¾î ¾Ö´Ï¸ŞÀÌ¼Ç ÇØÁ¦
-        _animator.SetTrigger("Hit"); // ShieldOf ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà
-        _shieldHitCount = 0; // ¹æ¾î Áß ¹ŞÀº °ø°İ È½¼ö ÃÊ±âÈ­
+        _isWaiting = true; // ëŒ€ê¸° ìƒíƒœ ì‹œì‘
+        _isShieldActive = false; // ë°©ì–´ ìƒíƒœ í•´ì œ
+        _animator.SetBool("Shield", false); // ë°©ì–´ ì• ë‹ˆë©”ì´ì…˜ í•´ì œ
+        _animator.SetTrigger("Hit"); // ShieldOf ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
+        _shieldHitCount = 0; // ë°©ì–´ ì¤‘ ë°›ì€ ê³µê²© íšŸìˆ˜ ì´ˆê¸°í™”
 
-        Debug.Log("¹æ¾î°¡ ±úÁ³½À´Ï´Ù! 2ÃÊ µ¿¾È ¿òÁ÷ÀÏ ¼ö ¾ø½À´Ï´Ù.");
+        Debug.Log("ë°©ì–´ê°€ ê¹¨ì¡ŒìŠµë‹ˆë‹¤! 2ì´ˆ ë™ì•ˆ ì›€ì§ì¼ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
 
-        yield return new WaitForSeconds(10.0f); // 2ÃÊ µ¿¾È ´ë±â
+        yield return new WaitForSeconds(10.0f); // 2ì´ˆ ë™ì•ˆ ëŒ€ê¸°
 
-        _isWaiting = false; // ´ë±â »óÅÂ ÇØÁ¦
-        Debug.Log("´Ù½Ã ¿òÁ÷ÀÏ ¼ö ÀÖ½À´Ï´Ù.");
+        _isWaiting = false; // ëŒ€ê¸° ìƒíƒœ í•´ì œ
+        Debug.Log("ë‹¤ì‹œ ì›€ì§ì¼ ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
     }
 
-    // µ¥¹ÌÁö »óÅÂ¸¦ ¸®¼ÂÇÏ´Â ¸Ş¼­µå
+    // ë°ë¯¸ì§€ ìƒíƒœë¥¼ ë¦¬ì…‹í•˜ëŠ” ë©”ì„œë“œ
     private void ResetDamage()
     {
         _isDamaged = false;
     }
 
-    // ÇÃ·¹ÀÌ¾î »ç¸Á Ã³¸® ¸Ş¼­µå
+    // í”Œë ˆì´ì–´ ì‚¬ë§ ì²˜ë¦¬ ë©”ì„œë“œ
     private void Die()
     {
-        Debug.Log("ÇÃ·¹ÀÌ¾î°¡ »ç¸ÁÇß½À´Ï´Ù.");
+        Debug.Log("í”Œë ˆì´ì–´ê°€ ì‚¬ë§í–ˆìŠµë‹ˆë‹¤.");
         _animator.GetBool("Death");
-        // »ç¸Á Ã³¸® ·ÎÁ÷ (°ÔÀÓ ¿À¹ö, ¸®½ºÆù µî)
-        // ½Ì±ÛÅæÀ» ÅëÇØ ScenesManagerÀÇ OnClickGameOver È£Ãâ
+        // ì‚¬ë§ ì²˜ë¦¬ ë¡œì§ (ê²Œì„ ì˜¤ë²„, ë¦¬ìŠ¤í° ë“±)
+        // ì‹±ê¸€í†¤ì„ í†µí•´ ScenesManagerì˜ OnClickGameOver í˜¸ì¶œ
         if (ScenesManager._Instance != null)
         {
             ScenesManager._Instance.OnClickGameOver();
         }
         else
         {
-            Debug.LogError("ScenesManager ÀÎ½ºÅÏ½º¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError("ScenesManager ì¸ìŠ¤í„´ìŠ¤ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
@@ -181,58 +198,63 @@ public class BoosRoomPlayerController : MonoBehaviour
 
     }
 
-    // °ø°İ ½ÇÇà ¸Ş¼­µå (´ÜÀÏ °ø°İ°ú Ãß°¡ °ø°İ ±¸ºĞ)
+    // ê³µê²© ì‹¤í–‰ ë©”ì„œë“œ (ë‹¨ì¼ ê³µê²©ê³¼ ì¶”ê°€ ê³µê²© êµ¬ë¶„)
     void Attack()
     {
-        _isAttacking = true; // °ø°İ Áß »óÅÂ ¼³Á¤
+        _isAttacking = true; // ê³µê²© ì¤‘ ìƒíƒœ ì„¤ì •
 
         switch (_leftClickCount)
         {
-            case 0: // Ã¹ ¹øÂ° Å¬¸¯ ½Ã ´ÜÀÏ °ø°İ
+            case 0: // ì²« ë²ˆì§¸ í´ë¦­ ì‹œ ë‹¨ì¼ ê³µê²©
                 _leftClickCount = 1;
-                _animator.SetTrigger("Attack"); // ´ÜÀÏ °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà
-                StartCoroutine(WaitForComboInput()); // ¿¬°è °ø°İ ÀÔ·Â ´ë±â ÄÚ·çÆ¾
+                _animator.SetTrigger("Attack"); // ë‹¨ì¼ ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
+                EnableSwordTrigger();
+                StartCoroutine(WaitForComboInput()); // ì—°ê³„ ê³µê²© ì…ë ¥ ëŒ€ê¸° ì½”ë£¨í‹´
                 break;
 
-            case 1: // µÎ ¹øÂ° Å¬¸¯ ½Ã ¿¬°è °ø°İ
+            case 1: // ë‘ ë²ˆì§¸ í´ë¦­ ì‹œ ì—°ê³„ ê³µê²©
                 _leftClickCount = 2;
-                _animator.SetTrigger("Attack2"); // ¿¬°è °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà
-                StartCoroutine(WaitForComboInput()); // ¿¬°è °ø°İ ÀÔ·Â ´ë±â ÄÚ·çÆ¾
+                _animator.SetTrigger("Attack2"); // ì—°ê³„ ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
+                EnableSwordTrigger();
+                StartCoroutine(WaitForComboInput()); // ì—°ê³„ ê³µê²© ì…ë ¥ ëŒ€ê¸° ì½”ë£¨í‹´
                 break;
 
-            case 2: // µÎ ¹øÂ° Å¬¸¯ ½Ã ¿¬°è °ø°İ
+            case 2: // ë‘ ë²ˆì§¸ í´ë¦­ ì‹œ ì—°ê³„ ê³µê²©
                 _leftClickCount = 3;
-                _animator.SetTrigger("Attack3"); // ¿¬°è °ø°İ ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà
-                Invoke("EndComboAttack", 1.5f); // ¿¬°è °ø°İ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ³¡³­ À§Ä¡¸¦ ÀúÀåÇÏ°í »óÅÂ ÃÊ±âÈ­
+                _animator.SetTrigger("Attack3"); // ì—°ê³„ ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
+                EnableSwordTrigger();
+                Invoke("EndComboAttack", 1.5f); // ì—°ê³„ ê³µê²© ì• ë‹ˆë©”ì´ì…˜ì´ ëë‚œ ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ê³  ìƒíƒœ ì´ˆê¸°í™”
                 break;
         }
     }
 
-    // ¿¬°è °ø°İ ÀÔ·Â ´ë±â ÄÚ·çÆ¾
+    // ì—°ê³„ ê³µê²© ì…ë ¥ ëŒ€ê¸° ì½”ë£¨í‹´
     IEnumerator WaitForComboInput()
     {
-        yield return new WaitForSeconds(0.5f); // 0.5ÃÊ µ¿¾È ¿¬°è °ø°İ ÀÔ·Â ´ë±â
-        if (_leftClickCount < 3) // Å¬¸¯ÀÌ ºÎÁ·ÇÏ´Ù¸é Á¾·á
+        yield return new WaitForSeconds(0.5f); // 0.5ì´ˆ ë™ì•ˆ ì—°ê³„ ê³µê²© ì…ë ¥ ëŒ€ê¸°
+        if (_leftClickCount < 3) // í´ë¦­ì´ ë¶€ì¡±í•˜ë‹¤ë©´ ì¢…ë£Œ
         {
-            ResetAttackState(); // °ø°İ »óÅÂ ÃÊ±âÈ­
+            ResetAttackState(); // ê³µê²© ìƒíƒœ ì´ˆê¸°í™”
         }
     }
 
-    // ¿¬°è °ø°İÀÌ ³¡³­ À§Ä¡¸¦ ÀúÀåÇÏ°í °ø°İ »óÅÂ¸¦ ÃÊ±âÈ­ÇÏ´Â ¸Ş¼­µå
+    // ì—°ê³„ ê³µê²©ì´ ëë‚œ ìœ„ì¹˜ë¥¼ ì €ì¥í•˜ê³  ê³µê²© ìƒíƒœë¥¼ ì´ˆê¸°í™”í•˜ëŠ” ë©”ì„œë“œ
     public void EndComboAttack()
     {
         ResetAttackState();
+        DisableSwordTrigger(); // ê³µê²© ì¢…ë£Œ ì‹œ ê²€ì˜ íŠ¸ë¦¬ê±° ë¹„í™œì„±í™”
     }
 
-    // °ø°İ »óÅÂ ÃÊ±âÈ­ ¸Ş¼­µå
+    // ê³µê²© ìƒíƒœ ì´ˆê¸°í™” ë©”ì„œë“œ
     private void ResetAttackState()
     {
-        _isAttacking = false; // °ø°İ »óÅÂ ÇØÁ¦
-        _leftClickCount = 0; // ¿ŞÂÊÅ¬¸¯ Ä«¿îÆ® ÃÊ±âÈ­
-        _rightClickCount = 0; // ¿À¸¥ÂÊÅ¬¸¯ Ä«¿îÆ® ÃÊ±âÈ­
+        _isAttacking = false; // ê³µê²© ìƒíƒœ í•´ì œ
+        _leftClickCount = 0; // ì™¼ìª½í´ë¦­ ì¹´ìš´íŠ¸ ì´ˆê¸°í™”
+        _rightClickCount = 0; // ì˜¤ë¥¸ìª½í´ë¦­ ì¹´ìš´íŠ¸ ì´ˆê¸°í™”
         _animator.ResetTrigger("Attack");
         _animator.ResetTrigger("Attack2");
         _animator.ResetTrigger("Attack3");
+        DisableSwordTrigger(); // ê³µê²© ì¢…ë£Œ ì‹œ ê²€ì˜ íŠ¸ë¦¬ê±° ë¹„í™œì„±í™”
     }
 
     void BackJump()
@@ -240,10 +262,22 @@ public class BoosRoomPlayerController : MonoBehaviour
         _animator.SetTrigger("BackJump");
     }
 
+    // ê²€ì˜ íŠ¸ë¦¬ê±° í™œì„±í™”
+    void EnableSwordTrigger()
+    {
+        _swordCollider.enabled = true;
+    }
+
+    // ê²€ì˜ íŠ¸ë¦¬ê±° ë¹„í™œì„±í™”
+    void DisableSwordTrigger()
+    {
+        _swordCollider.enabled = false;
+    }
+
     void Shield()
     {
-        if (_isWaiting) return; // ´ë±â »óÅÂÀÏ ¶§ ¹æ¾î ºÒ°¡
-        _isShieldActive = true; // ¹æ¾î »óÅÂ È°¼ºÈ­
+        if (_isWaiting) return; // ëŒ€ê¸° ìƒíƒœì¼ ë•Œ ë°©ì–´ ë¶ˆê°€
+        _isShieldActive = true; // ë°©ì–´ ìƒíƒœ í™œì„±í™”
         _animator.SetBool("Shield", true);
     }
 
@@ -254,22 +288,22 @@ public class BoosRoomPlayerController : MonoBehaviour
         if (_isInventoryOpen)
         {
             _inventoryUI.SetActive(true);
-            Time.timeScale = 0; // °ÔÀÓ ÀÏ½ÃÁ¤Áö
-            Cursor.visible = true; // ¸¶¿ì½º Ä¿¼­ Ç¥½Ã
-            Cursor.lockState = CursorLockMode.None; // ¸¶¿ì½º Àá±İ ÇØÁ¦
+            Time.timeScale = 0; // ê²Œì„ ì¼ì‹œì •ì§€
+            Cursor.visible = true; // ë§ˆìš°ìŠ¤ ì»¤ì„œ í‘œì‹œ
+            Cursor.lockState = CursorLockMode.None; // ë§ˆìš°ìŠ¤ ì ê¸ˆ í•´ì œ
         }
         else
         {
             _inventoryUI.SetActive(false);
-            Time.timeScale = 1; // °ÔÀÓ Àç°³
-            Cursor.visible = false; // ¸¶¿ì½º Ä¿¼­ ¼û±è
-            Cursor.lockState = CursorLockMode.Locked; // ¸¶¿ì½º Àá±İ
+            Time.timeScale = 1; // ê²Œì„ ì¬ê°œ
+            Cursor.visible = false; // ë§ˆìš°ìŠ¤ ì»¤ì„œ ìˆ¨ê¹€
+            Cursor.lockState = CursorLockMode.Locked; // ë§ˆìš°ìŠ¤ ì ê¸ˆ
         }
     }
 
     private void KeyEventProcess()
     {
-        // Å°º¸µå ÀÔ·Â Ã³¸® (Ç×»ó °¨Áö)
+        // í‚¤ë³´ë“œ ì…ë ¥ ì²˜ë¦¬ (í•­ìƒ ê°ì§€)
         if (Input.GetKeyDown(KeyCode.Space))
         {
             BackJump();
@@ -284,7 +318,7 @@ public class BoosRoomPlayerController : MonoBehaviour
             _animator.SetBool("Shield", false);
         }
 
-        // ÀÌµ¿¼Óµµ ´Ã¸®±â
+        // ì´ë™ì†ë„ ëŠ˜ë¦¬ê¸°
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
             _moveSpeed = 14.0f;
@@ -295,28 +329,28 @@ public class BoosRoomPlayerController : MonoBehaviour
             _moveSpeed = 7.0f;
         }
 
-        // OÅ°¸¦ ´­·¶À»¶§ ¿É¼ÇPopUp ¿­±â
+        // Oí‚¤ë¥¼ ëˆŒë €ì„ë•Œ ì˜µì…˜PopUp ì—´ê¸°
         if (Input.GetKeyDown(KeyCode.O))
         {
             if (GameManager._Instance != null)
             {
-                GameManager._Instance.ShowOptionPopUp(); // GameManager¿¡¼­ ShowOptionPopUpÈ£Ãâ
+                GameManager._Instance.ShowOptionPopUp(); // GameManagerì—ì„œ ShowOptionPopUpí˜¸ì¶œ
             }
         }
 
-        // °ÔÀÓ ½ºÅ×ÀÌÁö °­Á¦Á¾·á  
+        // ê²Œì„ ìŠ¤í…Œì´ì§€ ê°•ì œì¢…ë£Œ  
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            Time.timeScale = 0; // °ÔÀÓ ÀÏ½ÃÁ¤Áö
-            Cursor.visible = true; // ¸¶¿ì½º Ä¿¼­¸¦ Ç¥½Ã
-            Cursor.lockState = CursorLockMode.None; // ¸¶¿ì½ºÀá±İÀ» ÇØÁ¦
+            Time.timeScale = 0; // ê²Œì„ ì¼ì‹œì •ì§€
+            Cursor.visible = true; // ë§ˆìš°ìŠ¤ ì»¤ì„œë¥¼ í‘œì‹œ
+            Cursor.lockState = CursorLockMode.None; // ë§ˆìš°ìŠ¤ì ê¸ˆì„ í•´ì œ
             if (GameManager._Instance != null)
             {
                 GameManager._Instance.GameExitPopUp();
             }
             else
             {
-                Debug.LogError("ÀÎ½ºÅÏ½º¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù.");
+                Debug.LogError("ì¸ìŠ¤í„´ìŠ¤ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             }
         }
     }
@@ -325,7 +359,7 @@ public class BoosRoomPlayerController : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Attack(); // ¸¶¿ì½º ¿ŞÂÊ Å¬¸¯À¸·Î °ø°İ
+            Attack(); // ë§ˆìš°ìŠ¤ ì™¼ìª½ í´ë¦­ìœ¼ë¡œ ê³µê²©
         }
 
 
@@ -341,40 +375,45 @@ public class BoosRoomPlayerController : MonoBehaviour
         }
     }
 
-    void Update()
+    private void ProcessInput()
     {
-        // ÀÎº¥Åä¸® UI Åä±Û Ã³¸®
-        if (Input.GetKeyDown(KeyCode.I))
+        MouseEventProcess();
+        KeyEventProcess();
+
+        if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f || Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)
         {
-            ToggleInventory();
-            return; // ÀÎº¥Åä¸® Åä±Û ½Ã ´Ù¸¥ ÀÔ·ÂÀº Ã³¸®ÇÏÁö ¾ÊÀ½
-        }
-
-        // ÇöÀç ¾Ö´Ï¸ŞÀÌ¼Ç »óÅÂ¸¦ °¡Á®¿È
-        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
-
-        // °ø°İ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ½ÇÇà ÁßÀÏ ¶§ ÀÌµ¿ ±İÁö
-        bool isAttackAnimationPlaying = stateInfo.IsName("Attack") || stateInfo.IsName("Attack2") || stateInfo.IsName("Attack3");
-
-        if (!isAttackAnimationPlaying)
-        {
-            // °ø°İ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ¾Æ´Ò ¶§¸¸ ÀÌµ¿ ¹× Å° ÀÔ·Â Ã³¸®
-            MouseEventProcess();
-            KeyEventProcess();
-
-            if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f || Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f)
-            {
-                Move();
-            }
-            else
-            {
-                Stop();
-            }
+            Move();
         }
         else
         {
-            // °ø°İ ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ½ÇÇà ÁßÀÏ ¶§´Â ÀÌµ¿À» ¸ØÃã
             Stop();
         }
+    }
+
+    void Update()
+    {
+        // ì¸ë²¤í† ë¦¬ UI í† ê¸€ ì²˜ë¦¬
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            ToggleInventory();
+            return; // ì¸ë²¤í† ë¦¬ í† ê¸€ ì‹œ ë‹¤ë¥¸ ì…ë ¥ì€ ì²˜ë¦¬í•˜ì§€ ì•ŠìŒ
+        }
+
+        // í˜„ì¬ ì• ë‹ˆë©”ì´ì…˜ ìƒíƒœë¥¼ ê°€ì ¸ì˜´
+        AnimatorStateInfo stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+
+        // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ì´ ì‹¤í–‰ ì¤‘ì¸ì§€ í™•ì¸
+        bool isAttackAnimationPlaying = stateInfo.IsTag("Attack");
+
+        // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ ì¤‘ì¼ ë•Œ ì´ë™ì„ ë§‰ìŒ
+        if (isAttackAnimationPlaying)
+        {
+            MouseEventProcess();
+            Stop(); // ì´ë™ì„ ë©ˆì¶¤
+            return;
+        }
+
+        // ê³µê²© ì• ë‹ˆë©”ì´ì…˜ì´ ì•„ë‹ ë•Œë§Œ ì´ë™ ë° í‚¤ ì…ë ¥ ì²˜ë¦¬
+        ProcessInput();
     }
 }

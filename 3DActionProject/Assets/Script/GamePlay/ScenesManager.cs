@@ -7,8 +7,10 @@ public class ScenesManager : MonoBehaviour
 {
     public static ScenesManager _Instance; // 싱글톤 패턴 사용
 
+    // 선택 버튼 클릭 시 이동할 씬 이름
     [SerializeField] private string _sceneToLoad = "MainScene"; // 로드할 씬의 이름
     [SerializeField] private string _titleSceneToLoad = "TitleScene"; // 타이틀 화면으로 이동을 위한
+    private string _selectSceneToLoad = "SelectionWindowScene"; // 보스 선택창으로 이동을 위한
     [SerializeField] private float _delayBeforeLoad = 5.0f; // 씬 전환 전 대기 시간
     [SerializeField] private GameObject _dungeonOut; // 대기 시간을 무시한 던전 나가기 UI 표시
     [SerializeField] private Text _countdownText; // 대기 시간 카운트다운 UI 텍스트
@@ -79,6 +81,14 @@ public class ScenesManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None; // 마우스 잠금 해제
     }
 
+    // 보스 선택씬을 로드하는 메서드
+    public void LoadSelectScene()
+    {
+        SceneManager.LoadScene(_selectSceneToLoad);
+        Cursor.visible = true; // 마우스 커서 표시
+        Cursor.lockState = CursorLockMode.None; // 마우스 잠금 해제
+    }
+
     // 다음 스테이지로 이동할 때 호출되는 함수
     public void OnClickNextStage()
     {
@@ -139,6 +149,11 @@ public class ScenesManager : MonoBehaviour
         }
 
         SceneManager.LoadScene(_sceneToLoad); // 지정된 씬으로 전환
+    }
+
+    public void LoadScene(string sceneName)
+    {
+        SceneManager.LoadScene(sceneName);
     }
 
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -13,6 +14,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject _OptionPopUp; // 옵션(BGM)을 위한 팝업
     [SerializeField] private Sprite[] _BgmOnOffSprite; // Bgm 이미지를 위한 Splite
     [SerializeField] private Sprite[] _SoundEffectOnOffSprite; // 효과음의 이미지를 위한 Splite
+
+    [SerializeField] private GameObject _sceneAButtonCheck; // 보스맵 선택창에서 왼쪽 버튼 클릭 시 활성화
+    [SerializeField] private GameObject _sceneBButtonCheck; // 보스맵 선택창에서 오른쪽 버튼 클릭 시 버튼 텍스트
+    [SerializeField] private Text _sceneAButtonText; // 보스맵 선택창에서 왼쪽 버튼 클릭 시 버튼 텍스트
+    [SerializeField] private Text _sceneBButtonText; // 보스맵 선택창에서 오른쪽 버튼 클릭 시 버튼 텍스트
+    private string _selectedScene = "";  // 현재 선택된 씬 이름 (초기값은 선택이 되기 전이기 때문에 빈 문자열)
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -61,6 +69,45 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // 왼쪽 버튼을 클릭했을 때 호출되는 메서드
+    public void SelectLeftBoss()
+    {
+        _selectedScene = "BossScene"; // 왼쪽 버튼에 할당된 씬 이름 저장
+        _sceneAButtonCheck.SetActive(true); // 선택되었다는 체크이미지창 활성화
+        _sceneBButtonCheck.SetActive(false);
+        _sceneAButtonText.text = "선택됨";
+        _sceneBButtonText.text = "선택"; 
+        Debug.Log("왼쪽 씬 선택됨: " + _selectedScene); // 디버그 로그로 선택 확인
+    }
+
+    // 오른쪽 버튼을 클릭했을 때 호출되는 메서드
+    public void SelectRightBoss()
+    {
+        _selectedScene = "Boss2Scene"; // 오른쪽 버튼에 할당된 씬 이름 저장
+        _sceneAButtonText.text = "선택";
+        _sceneBButtonText.text = "선택됨";
+        _sceneBButtonCheck.SetActive(true); // 선택되었다는 체크이미지창 활성화
+        _sceneAButtonCheck.SetActive(false);
+        Debug.Log("오른쪽 씬 선택됨: " + _selectedScene); // 디버그 로그로 선택 확인
+
+    }
+
+    public void BossRoomStartButtonClick()
+    {
+        if (!string.IsNullOrEmpty(_selectedScene))
+        {
+            ScenesManager._Instance.LoadScene(_selectedScene);
+            Debug.Log("시작 버튼 클릭, " + _selectedScene + "로 이동");
+            Time.timeScale = 1;
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else
+        {
+            Debug.LogWarning("씬이 선택되지 않았습니다!");
+        }
+    }
+
     public void BgmOnOff(GameObject btn)
     {
         if (SoundManager.Instance.MusicOnOff)
@@ -88,6 +135,7 @@ public class GameManager : MonoBehaviour
             btn.GetComponent<Image>().sprite = _SoundEffectOnOffSprite[1];
         }
     }
+
 
     public void ShowOptionPopUp()
     {

@@ -198,7 +198,7 @@ public class BossController : MonoBehaviour
         if (_AttackEffectPrefab != null)
         {
             SoundManager.Instance.Play_BossAttackSound();
-            Instantiate(_AttackEffectPrefab, _AttackEffectPosition2.position, Quaternion.identity); // 왼쪽발 위치에 공격 효과 표시
+            Instantiate(_AttackEffectPrefab, _AttackEffectPosition.position, Quaternion.identity); // 왼쪽발 위치에 공격 효과 표시
         }
     }
 
