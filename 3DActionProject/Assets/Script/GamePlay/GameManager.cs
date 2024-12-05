@@ -20,6 +20,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Text _sceneAButtonText; // 보스맵 선택창에서 왼쪽 버튼 클릭 시 버튼 텍스트
     [SerializeField] private Text _sceneBButtonText; // 보스맵 선택창에서 오른쪽 버튼 클릭 시 버튼 텍스트
     private string _selectedScene = "";  // 현재 선택된 씬 이름 (초기값은 선택이 되기 전이기 때문에 빈 문자열)
+    
+    [SerializeField] private Animator _wolfAnimator; // 1번 보스가 선택되었을때 애니메이션을 실행하기위한 참조
+    [SerializeField] private Animator _lizardAnimator; // 2번 보스가 선택되었을때 애니메이션을 실행하기위한 참조
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -76,7 +79,9 @@ public class GameManager : MonoBehaviour
         _sceneAButtonCheck.SetActive(true); // 선택되었다는 체크이미지창 활성화
         _sceneBButtonCheck.SetActive(false);
         _sceneAButtonText.text = "선택됨";
-        _sceneBButtonText.text = "선택"; 
+        _sceneBButtonText.text = "선택";
+        _wolfAnimator.SetBool("Check", true); // 1번보스의 애니메이션 활성화
+        _lizardAnimator.SetBool("Check", false); // 2번보스의 애니메이션 비활성화
         Debug.Log("왼쪽 씬 선택됨: " + _selectedScene); // 디버그 로그로 선택 확인
     }
 
@@ -88,6 +93,8 @@ public class GameManager : MonoBehaviour
         _sceneBButtonText.text = "선택됨";
         _sceneBButtonCheck.SetActive(true); // 선택되었다는 체크이미지창 활성화
         _sceneAButtonCheck.SetActive(false);
+        _lizardAnimator.SetBool("Check", true); // 2번보스의 애니메이션 활성화
+        _wolfAnimator.SetBool("Check", false); // 1번보스의 애니메이션 비활성화
         Debug.Log("오른쪽 씬 선택됨: " + _selectedScene); // 디버그 로그로 선택 확인
 
     }

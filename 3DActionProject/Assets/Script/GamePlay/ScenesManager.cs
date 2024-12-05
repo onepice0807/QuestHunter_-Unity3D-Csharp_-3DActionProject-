@@ -8,8 +8,8 @@ public class ScenesManager : MonoBehaviour
     public static ScenesManager _Instance; // 싱글톤 패턴 사용
 
     // 선택 버튼 클릭 시 이동할 씬 이름
-    [SerializeField] private string _sceneToLoad = "MainScene"; // 로드할 씬의 이름
-    [SerializeField] private string _titleSceneToLoad = "TitleScene"; // 타이틀 화면으로 이동을 위한
+    private string _sceneToLoad = "MainScene"; // 로드할 씬의 이름
+    private string _titleSceneToLoad = "TitleScene"; // 타이틀 화면으로 이동을 위한
     private string _selectSceneToLoad = "SelectionWindowScene"; // 보스 선택창으로 이동을 위한
     [SerializeField] private float _delayBeforeLoad = 5.0f; // 씬 전환 전 대기 시간
     [SerializeField] private GameObject _dungeonOut; // 대기 시간을 무시한 던전 나가기 UI 표시

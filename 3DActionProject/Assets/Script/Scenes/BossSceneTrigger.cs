@@ -4,7 +4,7 @@ using UnityEngine.UI; // UI Text를 사용하기 위한 네임스페이스 추가
 
 public class BossSceneTrigger : MonoBehaviour
 {
-    [SerializeField] private string _sceneToLoad = "SelectionWindowScene"; // 로드할 씬의 이름
+    private string _sceneToLoad = "SelectionWindowScene"; // 로드할 씬의 이름
     [SerializeField] private float _delayBeforeLoad = 5.0f; // 씬 전환 전 대기 시간
     [SerializeField] private GameObject _popUp; // 플레이어의 해당맵 이동여부 판단하는 팝업창
     [SerializeField] private Text _popUpText; // 대기 시간 카운트다운 UI 텍스트
